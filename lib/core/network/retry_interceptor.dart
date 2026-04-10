@@ -8,27 +8,27 @@ class RetryInterceptor extends Interceptor {
 
   RetryInterceptor({
     required this.dio,
-    this.maxRetries = 4,
-    this.baseDelay = const Duration(milliseconds: 500),
+    this.maxRetries = 5,
+    this.baseDelay = const Duration(milliseconds: 200),
   });
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     final attempt = err.requestOptions.extra['retryCount'] as int? ?? 0;
-
     final shouldRetry = attempt < maxRetries && _isRetryable(err);
 
-    if (!shouldRetry) {
-      return handler.next(err);
-    }
+    if (!shouldRetry) return handler.next(err);
 
     final delay = baseDelay * pow(2, attempt).toInt();
     await Future.delayed(delay);
 
-    err.requestOptions.extra['retryCount'] = attempt + 1;
+    final newOptions = err.requestOptions.copyWith(
+      extra: Map<String, dynamic>.from(err.requestOptions.extra)
+        ..['retryCount'] = attempt + 1,
+    );
 
     try {
-      final response = await dio.fetch(err.requestOptions);
+      final response = await dio.fetch(newOptions);
       return handler.resolve(response);
     } on DioException catch (e) {
       return handler.next(e);
@@ -49,3 +49,4 @@ class RetryInterceptor extends Interceptor {
     }
   }
 }
+
