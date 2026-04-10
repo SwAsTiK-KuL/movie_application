@@ -1,5 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart'; // ← added for kDebugMode
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:platform_commons/application/bookmark/bookmark_bloc.dart';
@@ -55,12 +56,17 @@ void _registerCore() {
 
     dio.interceptors.addAll([
       ChaosInterceptor(),
-      RetryInterceptor(dio: dio),
-      LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        logPrint: (log) => debugPrint(log.toString()),
+      RetryInterceptor(
+        dio: dio,
+        maxRetries: 5,
+        baseDelay: const Duration(milliseconds: 200),
       ),
+      if (kDebugMode)
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+          logPrint: (log) => debugPrint(log.toString()),
+        ),
     ]);
 
     return dio;
@@ -135,12 +141,17 @@ void _registerMovieFeature() {
 
     dio.interceptors.addAll([
       ChaosInterceptor(),
-      RetryInterceptor(dio: dio),
-      LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        logPrint: (log) => debugPrint(log.toString()),
+      RetryInterceptor(
+        dio: dio,
+        maxRetries: 5,
+        baseDelay: const Duration(milliseconds: 200),
       ),
+      if (kDebugMode)
+        LogInterceptor(
+          requestBody: true,
+          responseBody: true,
+          logPrint: (log) => debugPrint(log.toString()),
+        ),
     ]);
 
     return dio;
