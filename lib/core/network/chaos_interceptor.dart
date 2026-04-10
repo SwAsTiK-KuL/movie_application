@@ -11,6 +11,11 @@ class ChaosInterceptor extends Interceptor {
       return handler.next(options);
     }
 
+    final retryCount = options.extra['retryCount'] as int? ?? 0;
+    if (retryCount > 0) {
+      return handler.next(options);
+    }
+
     final roll = _random.nextDouble();
 
     if (roll < 0.15) {
